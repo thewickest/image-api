@@ -12,8 +12,8 @@ export class TasksController {
     return this.tasksService.create(createTaskDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tasksService.findOne(+id);
+  @Get(':taskId')
+  findOne(@Param('taskId') taskId: string) {
+    return this.tasksService.findOne(taskId);
   }
 }

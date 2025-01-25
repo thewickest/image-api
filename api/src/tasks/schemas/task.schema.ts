@@ -7,10 +7,11 @@ export const TaskSchema = new mongoose.Schema({
   originalPath: String,
   createdAt: Date,
   updatedAt: Date,
-  images: [
-    {
-     resolution: String,
-     path: String, 
-    }
-  ]
+  images: [{type: mongoose.Types.ObjectId, ref: 'Image'}]
 });
+
+export const ImageSchema = new mongoose.Schema({
+  resolution: Number,
+  path: String,
+  task: {type: mongoose.Types.ObjectId, ref: 'Task'}
+})

@@ -1,4 +1,5 @@
 import { Document } from 'mongoose';
+import { Image } from './image.interface';
 
 export interface Task extends Document {
   status: string;
@@ -6,6 +7,5 @@ export interface Task extends Document {
   readonly originalPath: string;
   readonly createdAt: Date;
   updatedAt: Date
-  //review this
-  images?: String
+  images?: Image[]
 }
