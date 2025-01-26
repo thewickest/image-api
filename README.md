@@ -10,7 +10,7 @@ API for resizing images
 
 ## Setup
 
-This will install all the dependencies
+Install all the dependencies
 ```
 cd api
 npm install
@@ -22,14 +22,14 @@ docker-compose up -d
 ```
 
 ## Running
-For running the API just simply run this command inside the api folder
+For running the API just simply execute this command inside the api folder
 ```
 npm run start:dev
 ```
 Go to http://localhost:3000/api in order to see the API Documentation.
 
 ## Examples
-You will have some example `Tasks` and `Images`in the database the first time you run the API. The `/output` folder is not upload to the respository. These are some `ids` of the already created tasks
+The database will be pre-populated with some example Tasks and Images the first time you run the API. Note that the /output folder is not uploaded to the repository. Here are some example ids of the pre-created tasks:
 - 67964b05c2e2337d9e85d0ab
 - 67964b1cc2e2337d9e85d0b9
 - 67964b2ec2e2337d9e85d0c5
