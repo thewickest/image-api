@@ -1,14 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskDto } from './dto/task.dto';
 import { Model } from 'mongoose';
 import { Task } from './interfaces/task.interface';
 import { Image } from './interfaces/image.interface';
 import { COMPLETED, FAILED, IMAGE, PENDING, TASK } from './constants';
-import * as sharp from 'sharp'
-import { writeFileSync, mkdirSync, existsSync} from 'node:fs'
-import { extname, basename } from 'node:path'
-import { createHash } from 'crypto'
+import { resizeImage } from 'src/utils/functions';
 
 @Injectable()
 export class TasksService {
@@ -25,9 +22,6 @@ export class TasksService {
     const outputFolder = './output'
     const sizes = [800, 1024]
 
-    const extImage = extname(inputPath)
-    const imageName = basename(inputPath, extImage)
-
     const task = {
       status: PENDING,
       originalPath: createTaskDto.path,
@@ -38,33 +32,17 @@ export class TasksService {
     const createdTaskId = (await createdTask).id
 
     for (const size of sizes) {
-      const outputPath = `${outputFolder}/${imageName}/${size}`
-
-      if (!existsSync(outputPath)) {
-        mkdirSync(outputPath, { recursive: true });
-      }
-      
-      // TODO: For developing pourpose. Remove before merge
+      // INCLUDE THIS IF YOU WANT TO DELAY THE IMAGE CREATION 10 SECONDS
         // function executeAfterDelay(callback: () => void, delay: number) {
         //   setTimeout(callback, delay);
         // }
-        
         // executeAfterDelay(() => {
-        sharp(inputPath)
-        .resize({width: size})
-        .toBuffer()
-        .then(data => {
-          const hash = createHash('md5')
-          hash.update(data)
-          const md5 = hash.digest('hex')
-          const fullPath = `${outputPath}/${md5}${extImage}`
-          writeFileSync(`${fullPath}`, data)
-          return fullPath
-        })
-        .then(async fullPath => {
+      resizeImage(inputPath, outputFolder, size)
+        .then(async data => {
           const imageToCreate = (await this.imageModel.create({ 
             resolution: size,
-            path: `${fullPath}`,
+            md5: data?.md5,
+            path: data?.path,
             task: createdTaskId
           })).save()
           const taskToUpdate = await this.taskModel.findById(createdTaskId);
@@ -82,23 +60,28 @@ export class TasksService {
             taskToUpdate.updatedAt = new Date();
             await taskToUpdate.save();
           }})
-          // }, 10000);
+        // }, 10000);
+      //
     }
 
     return { taskId: createdTaskId, ...task}
   }
 
   async findOne(taskId: string): Promise<TaskDto> {
-    const mongoTask = await this.taskModel.findById(taskId).populate('images')
-    const task = {
-      taskId: mongoTask.id,
-      status: mongoTask.status,
-      price: mongoTask.price,
-      images: mongoTask.images
+    try {
+      const mongoTask = await this.taskModel.findById(taskId).populate('images')
+      const task = {
+        taskId: mongoTask.id,
+        status: mongoTask.status,
+        price: mongoTask.price,
+        images: mongoTask.images
+      }
+      if(mongoTask.status !== COMPLETED) {
+        delete task.images
+      }
+      return task
+    } catch (error) {
+      throw new HttpException('Image not found', HttpStatus.NOT_FOUND)
     }
-    if(mongoTask.status !== COMPLETED) {
-      delete task.images
-    }
-    return task
   }
 }
