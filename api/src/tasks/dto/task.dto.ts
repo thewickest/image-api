@@ -1,11 +1,12 @@
-export class TaskDto {
-    taskId: string
-    status: string
-    price: number
-    images?: ImageDto[]
-}
+import { ApiProperty } from "@nestjs/swagger"
+import { IsString } from "class-validator"
 
-export class ImageDto {
-    resolution: number
-    path: string
+export class TaskDto {
+    @ApiProperty()
+    @IsString()
+    taskId: string
+    @ApiProperty()
+    status: string
+    @ApiProperty()
+    price: number
 }

@@ -6,6 +6,7 @@ import { Task } from './interfaces/task.interface';
 import { Image } from './interfaces/image.interface';
 import { COMPLETED, FAILED, IMAGE, PENDING, TASK } from './constants';
 import { resizeImage } from 'src/utils/functions';
+import { TaskImageDto } from './dto/task-image.dto';
 
 @Injectable()
 export class TasksService {
@@ -24,11 +25,15 @@ export class TasksService {
 
     const task = {
       status: PENDING,
-      originalPath: createTaskDto.path,
       price: Math.floor(Math.random() * 50) + 5,
     }
 
-    const createdTask = new this.taskModel({...task, createdAt: new Date(), updatedAt: new Date()}).save()
+    const createdTask = new this.taskModel({
+      ...task,
+      originalPath: createTaskDto.path,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).save()
     const createdTaskId = (await createdTask).id
 
     for (const size of sizes) {
@@ -67,10 +72,10 @@ export class TasksService {
     return { taskId: createdTaskId, ...task}
   }
 
-  async findOne(taskId: string): Promise<TaskDto> {
+  async findOne(taskId: string): Promise<TaskImageDto> {
     try {
       const mongoTask = await this.taskModel.findById(taskId).populate('images')
-      const task = {
+      const task: TaskImageDto = {
         taskId: mongoTask.id,
         status: mongoTask.status,
         price: mongoTask.price,
