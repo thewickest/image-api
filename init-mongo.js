@@ -151,5 +151,15 @@ db.images.insert([
     path: './output/two-cats/1024/7fca9f5ead00eb67c9432b55f7a0eaa3.webp',
     task: ObjectId('67964b49c2e2337d9e85d0dd'),
     __v: 0
-  }
+  },
+  {
+    _id: ObjectId('67969f3c995483be170bdce5'),
+    status: 'failed',
+    price: 16,
+    originalPath: 'this/doesnt/exists',
+    createdAt: ISODate('2025-01-26T20:46:52.634Z'),
+    updatedAt: ISODate('2025-01-26T20:46:52.666Z'),
+    images: [],
+    __v: 0
+  },
 ])
