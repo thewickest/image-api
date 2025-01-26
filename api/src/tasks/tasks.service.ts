@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { Task } from './interfaces/task.interface';
 import { Image } from './interfaces/image.interface';
 import { COMPLETED, FAILED, IMAGE, PENDING, TASK } from './constants';
-import { resizeImage } from 'src/utils/functions';
+import { resizeImage } from '../utils/functions';
 import { TaskImageDto } from './dto/task-image.dto';
 
 @Injectable()
