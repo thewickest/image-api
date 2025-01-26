@@ -28,6 +28,16 @@ npm run start:dev
 ```
 Go to http://localhost:3000/api in order to see the API Documentation.
 
+## Running tests
+Integration tests:
+```
+npm run test
+```
+Ent to end tests:
+```
+npm run test:e2e
+```
+
 ## Examples
 The database will be pre-populated with some example Tasks and Images the first time you run the API. Note that the /output folder is not uploaded to the repository. Here are some example ids of the pre-created tasks:
 - 67964b05c2e2337d9e85d0ab
