@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskDto } from './dto/task.dto';
 import { Model } from 'mongoose';
@@ -17,9 +17,10 @@ export class TasksService {
     private imageModel: Model<Image>
   ) {}
 
+  private readonly logger = new Logger(TasksService.name)
+
   async create(createTaskDto: CreateTaskDto): Promise<TaskDto> {
     const inputPath = createTaskDto?.path
-    //We can include this is a .env file
     const outputFolder = './output'
     const sizes = [800, 1024]
 
@@ -42,7 +43,7 @@ export class TasksService {
         //   setTimeout(callback, delay);
         // }
         // executeAfterDelay(() => {
-      resizeImage(inputPath, outputFolder, size)
+        await resizeImage(inputPath, outputFolder, size)
         .then(async data => {
           const imageToCreate = (await this.imageModel.create({ 
             resolution: size,
@@ -59,6 +60,8 @@ export class TasksService {
           }
         })
         .catch(async error => {
+          this.logger.error('Something went wrong while processing the image')
+          this.logger.error(error)
           const taskToUpdate = await this.taskModel.findById(createdTaskId);
           if (taskToUpdate) {
             taskToUpdate.status = FAILED;
@@ -74,7 +77,7 @@ export class TasksService {
 
   async findOne(taskId: string): Promise<TaskImageDto> {
     try {
-      const mongoTask = await this.taskModel.findById(taskId).populate('images')
+      const mongoTask = await this.taskModel.findById(taskId).populate('images', 'resolution path')
       const task: TaskImageDto = {
         taskId: mongoTask.id,
         status: mongoTask.status,
