@@ -5,9 +5,10 @@ import { Model } from 'mongoose';
 import { Task } from './interfaces/task.interface';
 import { Image } from './interfaces/image.interface';
 import { COMPLETED, FAILED, IMAGE, PENDING, TASK } from './constants';
-const sharp =  require('sharp');
-const fs = require('node:fs')
-const path = require('node:path')
+import * as sharp from 'sharp'
+import { writeFileSync, mkdirSync, existsSync} from 'node:fs'
+import { extname, basename } from 'node:path'
+import { createHash } from 'crypto'
 
 @Injectable()
 export class TasksService {
@@ -24,8 +25,8 @@ export class TasksService {
     const outputFolder = './output'
     const sizes = [800, 1024]
 
-    const extImage = path.extname(inputPath)
-    const imageName = path.basename(inputPath, extImage)
+    const extImage = extname(inputPath)
+    const imageName = basename(inputPath, extImage)
 
     const task = {
       status: PENDING,
@@ -39,8 +40,8 @@ export class TasksService {
     for (const size of sizes) {
       const outputPath = `${outputFolder}/${imageName}/${size}`
 
-      if (!fs.existsSync(outputPath)) {
-        fs.mkdirSync(outputPath, { recursive: true });
+      if (!existsSync(outputPath)) {
+        mkdirSync(outputPath, { recursive: true });
       }
       
       // TODO: For developing pourpose. Remove before merge
@@ -51,12 +52,19 @@ export class TasksService {
         // executeAfterDelay(() => {
         sharp(inputPath)
         .resize({width: size})
-        // TODO: change this to md5
-        .toFile(`${outputPath}/${imageName}-${size}${extImage}`)
-        .then(async data => {
+        .toBuffer()
+        .then(data => {
+          const hash = createHash('md5')
+          hash.update(data)
+          const md5 = hash.digest('hex')
+          const fullPath = `${outputPath}/${md5}${extImage}`
+          writeFileSync(`${fullPath}`, data)
+          return fullPath
+        })
+        .then(async fullPath => {
           const imageToCreate = (await this.imageModel.create({ 
-            resolution: size, 
-            path: `${outputPath}/${imageName}-${size}${extImage}`,
+            resolution: size,
+            path: `${fullPath}`,
             task: createdTaskId
           })).save()
           const taskToUpdate = await this.taskModel.findById(createdTaskId);
